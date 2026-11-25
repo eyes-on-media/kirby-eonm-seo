@@ -112,10 +112,28 @@ vorhandener Text stehen, beim Ersetzen kommt ein neuer Vorschlag. Vorschlaege
 ueber 125 Zeichen werden einmal gekuerzt. Ein Fehler laesst den Upload
 trotzdem durchlaufen (Meldung im PHP-Fehlerprotokoll).
 
-Einrichten: `ki.php.example` aus diesem Ordner nach `site/config/ki.php`
-kopieren und den Schluessel eintragen. `site/config/ki.php` gehoert in
-`.gitignore` und wird auf dem Server von Hand angelegt. Ohne die Datei ist
-die Funktion aus.
+Einrichten:
+
+1. `ki.php.example` aus diesem Ordner nach `site/config/ki.php` kopieren
+   und den Schluessel eintragen.
+2. Kirby liest `ki.php` nicht von selbst. `site/config/config.php` muss die
+   Datei einbinden, zum Beispiel so:
+
+   ```php
+   $ki = file_exists(__DIR__ . '/ki.php') ? require __DIR__ . '/ki.php' : [];
+
+   return array_merge([
+       // ... die Optionen des Projekts
+   ], $ki);
+   ```
+
+3. `/site/config/ki.php` in `.gitignore` eintragen und auf dem Server von
+   Hand anlegen.
+4. Deploys, die auf dem Server aufraeumen (rsync oder lftp mit `--delete`),
+   muessen `site/config/ki.php` ausnehmen. Sonst loescht der naechste Deploy
+   die von Hand angelegte Datei, und die Alt-Texte hoeren still auf.
+
+Ohne die Datei ist die Funktion aus.
 
 ```php
 'eonm.seo.ki.schluessel' => 'sk-ant-...',

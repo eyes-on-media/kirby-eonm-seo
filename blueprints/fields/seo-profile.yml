@@ -7,7 +7,7 @@ fields:
   profile_hinweis:
     type: headline
     label: Profile in sozialen Netzwerken
-    help: Vollständige Adresse des Profils, zum Beispiel https://www.instagram.com/firma. Leere Felder werden übersprungen.
+    help: Vollständige Adresse des Profils, zum Beispiel https://www.instagram.com/firma. Leere Felder und Adressen ohne Profilnamen werden übersprungen.
   instagram:
     label: Instagram
     type: url

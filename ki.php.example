@@ -3,10 +3,11 @@
 /**
  * Zugang zur Claude-API fuer die Alt-Texte beim Bild-Upload (site/plugins/seo).
  *
- * Vorlage aus dem Plugin: nach site/config/ki.php kopieren.
+ * Vorlage aus dem Plugin: nach site/config/ki.php kopieren und in
+ * site/config/config.php einbinden (siehe README des Plugins, "Alt-Texte").
  *
- * Die Datei gehoert in .gitignore und wird von
- * deploy.sh nicht hochgeladen: auf dem Server von Hand anlegen.
+ * Die Datei gehoert in .gitignore und nicht in den Deploy: auf dem Server
+ * von Hand anlegen und beim Deploy vor dem Loeschen schuetzen.
  * Ohne ki.php ist die Funktion aus, das Alt-Feld bleibt ein normales Textfeld.
  *
  * Schluessel: https://console.anthropic.com > API Keys, am besten einer pro

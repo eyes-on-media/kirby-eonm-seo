@@ -131,14 +131,17 @@ class Betrieb
 
     /**
      * Adressen der Profile in sozialen Netzwerken (Option profile: Namen der
-     * Felder in den Einstellungen), fuer sameAs. Nur gueltige Adressen.
+     * Felder in den Einstellungen), fuer sameAs. Nur gueltige Adressen mit
+     * einem Pfad: "https://www.instagram.com/" ohne Profil ist ein
+     * Platzhalter und wuerde das Netzwerk selbst als Profil der Firma melden.
      */
     public static function profile(Site $site): array
     {
         $adressen = [];
         foreach (option('eonm.seo.profile') as $feld) {
             $adresse = trim((string) $site->content()->get($feld)->value());
-            if ($adresse !== '' && V::url($adresse)) {
+            $pfad = trim((string) parse_url($adresse, PHP_URL_PATH), '/');
+            if ($adresse !== '' && V::url($adresse) && $pfad !== '') {
                 $adressen[] = $adresse;
             }
         }
