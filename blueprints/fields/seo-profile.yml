@@ -1,0 +1,30 @@
+# Profile in sozialen Netzwerken. Einbinden in site/blueprints/site.yml:
+#   profile: fields/seo-profile
+# Die Adressen gehen in die Strukturdaten (sameAs), damit Suchmaschinen die
+# Profile der Firma zuordnen. Andere Feldnamen: Option eonm.seo.profile.
+type: group
+fields:
+  profile_hinweis:
+    type: headline
+    label: Profile in sozialen Netzwerken
+    help: Vollständige Adresse des Profils, zum Beispiel https://www.instagram.com/firma. Leere Felder werden übersprungen.
+  instagram:
+    label: Instagram
+    type: url
+    width: 1/2
+  facebook:
+    label: Facebook
+    type: url
+    width: 1/2
+  youtube:
+    label: YouTube
+    type: url
+    width: 1/2
+  linkedin:
+    label: LinkedIn
+    type: url
+    width: 1/2
+  tiktok:
+    label: TikTok
+    type: url
+    width: 1/2

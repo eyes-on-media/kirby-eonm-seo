@@ -1,0 +1,36 @@
+# Reiter "SEO" in den Einstellungen der Website (site/blueprints/site.yml):
+# Vorgaben fuer alle Seiten, die selbst nichts eingetragen haben.
+label: SEO
+icon: search
+# Links die Felder, rechts die Vorschau der Startseite.
+columns:
+  - width: 2/3
+    fields:
+      seo_hinweis:
+        type: info
+        label: Vorgaben für alle Seiten
+        theme: info
+        text: Gelten überall dort, wo eine Seite im eigenen Reiter „SEO“ nichts eingetragen hat.
+      seo_beschreibung:
+        label: Beschreibung der Website
+        type: textarea
+        buttons: false
+        size: small
+        maxlength: 170
+        help: Ein bis zwei Sätze. Wer ist die Firma, was bietet sie an, wo sitzt sie?
+      seo_bild:
+        label: Vorschaubild beim Teilen
+        type: files
+        max: 1
+        layout: cards
+        width: 1/2
+        uploads:
+          template: image
+        help: Querformat, mindestens 1200 px breit. Erscheint beim Teilen von Seiten ohne eigenes Bild.
+  - width: 1/3
+    sticky: true
+    fields:
+      seo_vorschau:
+        type: seovorschau
+        label: Vorschau der Startseite
+        help: Jede Seite hat im eigenen Reiter „SEO“ ihre eigene Vorschau.

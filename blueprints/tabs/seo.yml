@@ -1,0 +1,48 @@
+# Reiter "SEO" fuer Seiten. Einbinden im Seiten-Blueprint:
+#   tabs:
+#     seo: tabs/seo
+# Alle Felder sind optional; leere Felder fallen auf die Vorgaben aus den
+# Einstellungen der Website zurueck (siehe site/plugins/seo/index.php).
+label: SEO
+icon: search
+# Links die Felder, rechts die Vorschau (bleibt beim Scrollen stehen).
+columns:
+  - width: 2/3
+    fields:
+      seo_titel:
+        label: Titel für Suchmaschinen
+        type: text
+        maxlength: 70
+        placeholder: "{{ page.title }}"
+        help: Leer lassen, dann gilt der Seitentitel. Der Name der Website wird automatisch angehängt.
+      seo_beschreibung:
+        label: Beschreibung
+        type: textarea
+        buttons: false
+        size: small
+        maxlength: 170
+        help: Ein bis zwei Sätze, die in den Suchergebnissen unter dem Titel stehen. Leer lassen, dann gilt die Beschreibung aus den Einstellungen.
+      seo_bild:
+        label: Vorschaubild beim Teilen
+        type: files
+        max: 1
+        layout: cards
+        width: 1/2
+        uploads:
+          template: image
+        help: Erscheint, wenn die Seite in sozialen Netzwerken oder Messengern geteilt wird. Leer lassen, dann gilt das Hero-Bild der Seite, sonst das Bild aus den Einstellungen.
+      seo_noindex:
+        label: Sichtbarkeit in Suchmaschinen
+        type: toggle
+        width: 1/2
+        text:
+          - Seite darf gefunden werden
+          - Seite vor Suchmaschinen verbergen
+        help: Verborgene Seiten fehlen auch in der Sitemap.
+  - width: 1/3
+    sticky: true
+    fields:
+      seo_vorschau:
+        type: seovorschau
+        label: Vorschau
+        help: Läuft beim Tippen mit und zeigt auch, was gilt, wenn die Felder leer bleiben.

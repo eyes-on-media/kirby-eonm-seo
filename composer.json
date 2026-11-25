@@ -1,0 +1,15 @@
+{
+  "name": "eyes-on-media/kirby-eonm-seo",
+  "description": "SEO-Grundausstattung fuer Kirby 5: Meta-Tags, Panel-Reiter, Sitemap, robots.txt, Strukturdaten und Alt-Texte beim Bild-Upload ueber die Claude-API",
+  "type": "kirby-plugin",
+  "license": "proprietary",
+  "require": {
+    "php": ">=8.2",
+    "getkirby/composer-installer": "^1.2",
+    "anthropic-ai/sdk": "^1.6",
+    "guzzlehttp/guzzle": "^7.8 || ^8.0"
+  },
+  "extra": {
+    "installer-name": "seo"
+  }
+}

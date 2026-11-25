@@ -1,0 +1,52 @@
+# Oeffnungszeiten des Betriebs. Einbinden in site/blueprints/site.yml:
+#   oeffnungszeiten: fields/seo-oeffnungszeiten
+# Gehen in die Strukturdaten (Suchmaschinen, Google Maps) und lassen sich
+# mit $site->oeffnungszeitenZeilen() auf der Website anzeigen.
+label: Öffnungszeiten
+type: structure
+help: Eine Zeile je Zeitraum, zum Beispiel „Montag bis Freitag, 8 bis 17 Uhr“ und „Samstag, 8 bis 12 Uhr“. Mittagspause als zwei Zeilen mit denselben Tagen. Suchmaschinen und Google Maps übernehmen diese Zeiten.
+empty: Noch keine Öffnungszeiten eingetragen
+# mobile: true, weil das Panel schmale Tabellen sonst auf die erste Spalte
+# kuerzt (Tabelle in einer 2/3-Spalte gilt schon als schmal).
+columns:
+  tage:
+    width: 1/2
+    mobile: true
+  von:
+    width: 1/4
+    mobile: true
+  bis:
+    width: 1/4
+    mobile: true
+fields:
+  tage:
+    label: Tage
+    type: checkboxes
+    columns: 4
+    required: true
+    options:
+      mo: Montag
+      di: Dienstag
+      mi: Mittwoch
+      do: Donnerstag
+      fr: Freitag
+      sa: Samstag
+      so: Sonntag
+  von:
+    label: Von
+    type: time
+    display: HH:mm
+    step:
+      unit: minute
+      size: 15
+    required: true
+    width: 1/2
+  bis:
+    label: Bis
+    type: time
+    display: HH:mm
+    step:
+      unit: minute
+      size: 15
+    required: true
+    width: 1/2

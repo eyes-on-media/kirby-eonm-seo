@@ -1,0 +1,106 @@
+/* Panel-Feld "seovorschau" (index.js): zwei getrennte Vorschau-Karten */
+.eonm-seo-karte + .eonm-seo-karte {
+  margin-top: var(--spacing-8);
+}
+.eonm-seo-karte-kopf {
+  display: flex;
+  gap: var(--spacing-2);
+  align-items: center;
+  margin-bottom: var(--spacing-2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semi);
+}
+.eonm-seo-karte-kasten {
+  overflow: hidden;
+  padding: var(--spacing-4);
+  border-radius: var(--rounded);
+  background: var(--item-color-back, var(--color-white));
+  box-shadow: var(--shadow);
+  line-height: 1.5;
+}
+.eonm-seo-leise {
+  font-size: var(--text-xs);
+  color: var(--color-text-dimmed);
+}
+.eonm-seo-text {
+  font-size: var(--text-sm);
+}
+/* Kopf des Treffers wie bei Google: rundes Favicon, Name, Adresse */
+.eonm-seo-google-kopf {
+  display: flex;
+  gap: var(--spacing-3);
+  align-items: center;
+}
+.eonm-seo-google-icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  color: var(--color-gray-600);
+}
+.eonm-seo-google-icon img {
+  width: 1.125rem;
+  height: 1.125rem;
+  object-fit: contain;
+}
+.eonm-seo-google-seite {
+  min-width: 0;
+  line-height: 1.3;
+}
+.eonm-seo-google-seite p {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.eonm-seo-google-name {
+  font-size: var(--text-sm);
+}
+.eonm-seo-google-titel {
+  margin: var(--spacing-3) 0 var(--spacing-2);
+  font-size: var(--text-lg);
+  line-height: 1.3;
+  color: var(--color-blue-600);
+}
+
+/* Teilen-Karte: Bild randlos oben, Text darunter */
+.eonm-seo-teilen {
+  padding: 0;
+}
+.eonm-seo-teilen-bild {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1200 / 630;
+  object-fit: cover;
+}
+.eonm-seo-teilen-ohne {
+  padding: var(--spacing-6) var(--spacing-4);
+  font-size: var(--text-xs);
+  color: var(--color-text-dimmed);
+  text-align: center;
+  border-bottom: 1px solid var(--color-border);
+}
+.eonm-seo-teilen-text {
+  padding: var(--spacing-3) var(--spacing-4) var(--spacing-4);
+}
+.eonm-seo-teilen-titel {
+  margin: var(--spacing-1) 0;
+  font-weight: var(--font-semi);
+  line-height: 1.3;
+}
+
+.eonm-seo-hinweis {
+  display: flex;
+  gap: var(--spacing-2);
+  align-items: flex-start;
+  margin-top: var(--spacing-3);
+  font-size: var(--text-xs);
+}
+.eonm-seo-hinweis .k-icon {
+  flex-shrink: 0;
+  color: var(--color-orange-600);
+}

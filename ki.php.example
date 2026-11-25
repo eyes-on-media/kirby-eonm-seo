@@ -1,0 +1,21 @@
+<?php
+
+/**
+ * Zugang zur Claude-API fuer die Alt-Texte beim Bild-Upload (site/plugins/seo).
+ *
+ * Vorlage aus dem Plugin: nach site/config/ki.php kopieren.
+ *
+ * Die Datei gehoert in .gitignore und wird von
+ * deploy.sh nicht hochgeladen: auf dem Server von Hand anlegen.
+ * Ohne ki.php ist die Funktion aus, das Alt-Feld bleibt ein normales Textfeld.
+ *
+ * Schluessel: https://console.anthropic.com > API Keys, am besten einer pro
+ * Projekt mit eigenem Ausgabenlimit. Abgerechnet wird nach Verbrauch, ein
+ * Claude-Abo (Pro/Max) gilt dafuer nicht.
+ */
+return [
+    'eonm.seo.ki.schluessel' => 'sk-ant-...',
+
+    // Standard ist das guenstigste Modell. Fuer genauere Beschreibungen:
+    // 'eonm.seo.ki.modell' => 'claude-sonnet-5-5',
+];
