@@ -9,6 +9,115 @@
  */
 window.panel.plugin("eonm/seo", {
   fields: {
+    /**
+     * Panel-Feld "seoalttexte": Alt-Texte fuer schon hochgeladene Bilder
+     * nachtragen. Holt die Liste der Bilder ohne Alt-Text und schickt sie
+     * einzeln an den Server (API-Routen in index.php), damit der Fortschritt
+     * sichtbar ist und man jederzeit anhalten kann. Vorhandene Alt-Texte
+     * fasst der Server nicht an.
+     */
+    seoalttexte: {
+      props: {
+        label: String,
+        help: String
+      },
+      data() {
+        return {
+          laden: true,
+          aktiv: false,
+          bilder: [],
+          ergebnisse: [],
+          laeuft: false,
+          anhalten: false,
+          fehler: null
+        };
+      },
+      computed: {
+        erledigt() {
+          return this.ergebnisse.length;
+        },
+        eingetragen() {
+          return this.ergebnisse.filter((e) => e.text).length;
+        }
+      },
+      created() {
+        this.holen();
+      },
+      methods: {
+        async holen() {
+          this.laden = true;
+          this.fehler = null;
+          try {
+            const antwort = await this.$api.get("eonm-seo/alt-texte");
+            this.aktiv = antwort.aktiv;
+            this.bilder = antwort.bilder;
+          } catch (e) {
+            this.fehler = e.message;
+          }
+          this.laden = false;
+        },
+        async starten() {
+          const liste = this.bilder;
+          this.laeuft = true;
+          this.anhalten = false;
+          this.ergebnisse = [];
+          for (const bild of liste) {
+            if (this.anhalten) {
+              break;
+            }
+            let ergebnis;
+            try {
+              ergebnis = await this.$api.post("eonm-seo/alt-texte", { id: bild.id });
+            } catch (e) {
+              ergebnis = { grund: e.message };
+            }
+            this.ergebnisse.unshift({ ...bild, ...ergebnis });
+          }
+          this.laeuft = false;
+          // Neu zaehlen: was jetzt noch fehlt, auch nach dem Anhalten
+          const ergebnisse = this.ergebnisse;
+          await this.holen();
+          this.ergebnisse = ergebnisse;
+        }
+      },
+      template: `
+        <k-field :label="label" :help="help" class="eonm-seo-alttexte">
+          <div class="eonm-seo-karte-kasten">
+            <p v-if="laden && !laeuft" class="eonm-seo-leise">Bilder werden gezählt …</p>
+            <p v-else-if="fehler" class="eonm-seo-hinweis"><k-icon type="alert" /> <span>{{ fehler }}</span></p>
+            <p v-else-if="!aktiv" class="eonm-seo-text">Die automatische Bildbeschreibung ist nicht eingerichtet (API-Schlüssel in site/config/ki.php).</p>
+            <template v-else>
+              <p class="eonm-seo-text">
+                <template v-if="laeuft">{{ erledigt }} von {{ bilder.length }} Bildern beschrieben …</template>
+                <template v-else-if="bilder.length === 0">Alle Bilder haben einen Alt-Text.</template>
+                <template v-else-if="bilder.length === 1">1 Bild hat noch keinen Alt-Text.</template>
+                <template v-else>{{ bilder.length }} Bilder haben noch keinen Alt-Text.</template>
+              </p>
+              <p v-if="!laeuft && bilder.length" class="eonm-seo-leise">Jedes Bild geht verkleinert an die Claude-API. Das dauert einige Sekunden je Bild; die Seite muss so lange offen bleiben.</p>
+              <div class="eonm-seo-alttexte-knopf">
+                <k-button v-if="laeuft" icon="cancel" variant="filled" size="sm" :disabled="anhalten" @click="anhalten = true">
+                  {{ anhalten ? "Wird angehalten …" : "Anhalten" }}
+                </k-button>
+                <k-button v-else-if="bilder.length" icon="wand" variant="filled" theme="positive" size="sm" @click="starten">
+                  Alt-Texte erzeugen
+                </k-button>
+              </div>
+            </template>
+          </div>
+          <template v-if="ergebnisse.length">
+            <p class="eonm-seo-leise eonm-seo-alttexte-summe">{{ eingetragen }} eingetragen, {{ erledigt - eingetragen }} ohne. Bitte die Vorschläge prüfen.</p>
+            <ul class="eonm-seo-alttexte-liste">
+              <li v-for="e in ergebnisse" :key="e.id">
+                <k-link :to="e.link" class="eonm-seo-text"><strong>{{ e.name }}</strong></k-link>
+                <span class="eonm-seo-leise"> · {{ e.ort }}</span>
+                <p v-if="e.text" class="eonm-seo-text">{{ e.text }}</p>
+                <p v-else class="eonm-seo-hinweis"><k-icon type="alert" /> <span>{{ e.grund }}</span></p>
+              </li>
+            </ul>
+          </template>
+        </k-field>
+      `
+    },
     seovorschau: {
       props: {
         label: String,

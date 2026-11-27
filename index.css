@@ -104,3 +104,23 @@
   flex-shrink: 0;
   color: var(--color-orange-600);
 }
+
+/* Panel-Feld "seoalttexte" (index.js): Alt-Texte nachtragen */
+.eonm-seo-alttexte-knopf:not(:empty) {
+  margin-top: var(--spacing-3);
+}
+.eonm-seo-alttexte-summe {
+  margin-top: var(--spacing-4);
+}
+.eonm-seo-alttexte-liste {
+  max-height: 24rem;
+  overflow-y: auto;
+  margin-top: var(--spacing-2);
+}
+.eonm-seo-alttexte-liste li {
+  padding: var(--spacing-2) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.eonm-seo-alttexte-liste .eonm-seo-hinweis {
+  margin-top: var(--spacing-1);
+}

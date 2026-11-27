@@ -42,6 +42,9 @@ load([
  * Alt-Texte: Beim Hochladen eines Bildes schlaegt Claude einen Alt-Text vor
  * (src/AltText.php) und traegt ihn ins Feld "alt" ein. Nur aktiv, wenn ein
  * API-Schluessel in site/config/ki.php steht (Vorlage ki.php.example).
+ * Fuer Bilder, die schon da sind: Feld seoalttexte (steht in tabs/seo-site)
+ * oder auf der Kommandozeile kirby seo:alt-texte. Beides fuellt nur leere
+ * Alt-Texte, vorhandene bleiben, wie sie sind.
  *
  * Das Plugin haengt an keinem anderen Plugin: Das Vorschaubild rechnet es
  * selbst (1200 x 630, JPG), die Firmendaten liest es aus den Feldern firma,
@@ -114,8 +117,8 @@ Kirby::plugin('eonm/seo', [
         'fields/seo-profile'         => __DIR__ . '/blueprints/fields/seo-profile.yml',
     ],
 
-    // Vorschau im Reiter "SEO": reines Anzeige-Feld, Darstellung in index.js
     'fields' => [
+        // Vorschau im Reiter "SEO": reines Anzeige-Feld, Darstellung in index.js
         'seovorschau' => [
             'save'     => false,
             'computed' => [
@@ -123,6 +126,95 @@ Kirby::plugin('eonm/seo', [
                     return Vorschau::vorgaben($this->model());
                 },
             ],
+        ],
+        // Alt-Texte nachtragen: Knopf im Reiter "SEO" der Website, arbeitet
+        // die Bilder ohne Alt-Text ueber die API-Routen unten nacheinander ab
+        'seoalttexte' => [
+            'save' => false,
+        ],
+    ],
+
+    // Fuer das Feld seoalttexte. Ein Bild je Anfrage, damit keine Anfrage an
+    // das Zeitlimit von PHP stoesst und das Panel den Fortschritt zeigen kann.
+    'api' => [
+        'routes' => [
+            [
+                'pattern' => 'eonm-seo/alt-texte',
+                'method'  => 'GET',
+                'action'  => function () {
+                    $bilder = AltText::fehlende()->filter(fn (File $file) => $file->permissions()->can('update'));
+
+                    return [
+                        'aktiv'  => AltText::aktiv(),
+                        'bilder' => array_values($bilder->values(fn (File $file) => [
+                            'id'   => $file->id(),
+                            'name' => $file->filename(),
+                            'ort'  => $file->parent() instanceof Kirby\Cms\Page ? $file->parent()->title()->value() : 'Website',
+                            'link' => $file->panel()->url(true),
+                        ])),
+                    ];
+                },
+            ],
+            [
+                'pattern' => 'eonm-seo/alt-texte',
+                'method'  => 'POST',
+                'action'  => function () {
+                    $file = $this->kirby()->file((string) $this->requestBody('id'));
+
+                    if ($file === null) {
+                        return ['grund' => 'Bild nicht gefunden'];
+                    }
+                    if ($file->permissions()->can('update') === false) {
+                        return ['grund' => 'Keine Berechtigung, das Bild zu bearbeiten'];
+                    }
+                    // Zeitlimit der API und eine moegliche Kuerzung passen
+                    // nicht immer in die 30 Sekunden, die PHP oft erlaubt
+                    @set_time_limit(120);
+
+                    return AltText::nachtragen($file);
+                },
+            ],
+        ],
+    ],
+
+    // Dasselbe auf der Kommandozeile (getkirby/cli): kirby seo:alt-texte
+    'commands' => [
+        'seo:alt-texte' => [
+            'description' => 'Alt-Texte fuer Bilder ohne Alt-Text nachtragen (vorhandene bleiben unangetastet)',
+            'args'        => [
+                'liste' => [
+                    'longPrefix'  => 'liste',
+                    'description' => 'Nur auflisten, nichts an die Claude-API schicken',
+                    'noValue'     => true,
+                ],
+            ],
+            'command' => static function ($cli): void {
+                $bilder = AltText::fehlende();
+                $cli->info($bilder->count() . ' Bilder ohne Alt-Text');
+
+                if ($cli->arg('liste')) {
+                    foreach ($bilder as $file) {
+                        $cli->out($file->id());
+                    }
+                    return;
+                }
+                if (AltText::aktiv() === false) {
+                    $cli->error('Kein API-Schluessel eingerichtet (site/config/ki.php)');
+                    return;
+                }
+
+                $ohne = 0;
+                foreach ($bilder as $file) {
+                    $ergebnis = AltText::nachtragen($file);
+                    if (isset($ergebnis['text'])) {
+                        $cli->success($file->id() . ': ' . $ergebnis['text']);
+                    } else {
+                        $ohne++;
+                        $cli->error($file->id() . ': ' . $ergebnis['grund']);
+                    }
+                }
+                $cli->info('Fertig, ' . ($bilder->count() - $ohne) . ' Alt-Texte eingetragen, ' . $ohne . ' ohne');
+            },
         ],
     ],
 

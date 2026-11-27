@@ -9,6 +9,7 @@ use Anthropic\Core\Exceptions\AuthenticationException;
 use Anthropic\Core\Exceptions\RateLimitException;
 use GuzzleHttp\Client as HttpClient;
 use Kirby\Cms\File;
+use Kirby\Cms\Files;
 use Kirby\Cms\FileVersion;
 use Kirby\Filesystem\F;
 use Throwable;
@@ -16,7 +17,10 @@ use Throwable;
 /**
  * Alt-Text fuer hochgeladene Bilder ueber die Claude-API.
  *
- * Laeuft im Hook file.create:after (siehe index.php). Der Upload darf daran
+ * Laeuft in den Hooks file.create:after und file.replace:after (siehe
+ * index.php). Fuer Bilder, die schon vorher hochgeladen waren, gibt es das
+ * Nachtragen: Feld seoalttexte im Panel und Befehl seo:alt-texte (nur Bilder
+ * ohne Alt-Text, siehe nachtragen()). Der Upload darf daran
  * nie scheitern: Jeder Fehler (kein Netz, falscher Schluessel, Zeitlimit,
  * Ablehnung) wird nur protokolliert, das Feld "alt" bleibt dann leer und die
  * Redaktion traegt den Text von Hand ein.
@@ -60,6 +64,12 @@ class AltText
         und ohne Erklärung.
         TEXT;
 
+    /** Ohne API-Schluessel ist die Funktion aus */
+    public static function aktiv(): bool
+    {
+        return empty(option('eonm.seo.ki.schluessel')) === false;
+    }
+
     /**
      * Fuer die Hooks: traegt den Alt-Text ein und gibt die aktualisierte Datei
      * zurueck, sonst null (dann bleibt die Datei, wie sie ist).
@@ -71,35 +81,89 @@ class AltText
      */
     public static function fuerUpload(File $file, bool $ersetzt = false): ?File
     {
-        $schluessel = option('eonm.seo.ki.schluessel');
-
-        if (empty($schluessel) || static::geeignet($file) === false) {
+        if (static::aktiv() === false || static::geeignet($file) === false) {
             return null;
         }
         if ($ersetzt === false && $file->alt()->isNotEmpty()) {
             return null;
         }
 
-        try {
-            $text = static::erzeugen($file, $schluessel);
-            if ($text === null) {
-                return null;
-            }
-            // Der Text kommt vom System, nicht vom angemeldeten Benutzer
-            return $file->kirby()->impersonate('kirby', fn () => $file->update(['alt' => $text]));
-        } catch (AuthenticationException $e) {
-            static::melden($file, 'API-Schluessel ungueltig (site/config/ki.php)');
-        } catch (RateLimitException $e) {
-            static::melden($file, 'Anfragelimit der Claude-API erreicht');
-        } catch (APIStatusException $e) {
-            static::melden($file, 'Claude-API antwortet mit Fehler ' . $e->getMessage());
-        } catch (APIConnectionException $e) {
-            static::melden($file, 'Claude-API nicht erreichbar oder Zeitlimit ueberschritten');
-        } catch (Throwable $e) {
-            static::melden($file, $e->getMessage());
+        $ergebnis = static::eintragen($file);
+        return $ergebnis instanceof File ? $ergebnis : null;
+    }
+
+    /**
+     * Alle Bilder der Website, auch in Entwuerfen und in den Einstellungen
+     * der Website, die einen Alt-Text haben koennten, aber keinen haben.
+     * Fuer das Nachtragen (Feld seoalttexte im Panel, Befehl seo:alt-texte).
+     */
+    public static function fehlende(): Files
+    {
+        $site = kirby()->site();
+
+        return $site->files()
+            ->add($site->index(true)->files())
+            ->filter(fn (File $file) => static::geeignet($file) && $file->alt()->isEmpty());
+    }
+
+    /**
+     * Alt-Text fuer ein schon hochgeladenes Bild nachtragen. Ein vorhandener
+     * Alt-Text wird nie ueberschrieben, auch kein ungespeicherter im Panel.
+     *
+     * Gibt ['text' => neuer Alt-Text] oder ['grund' => warum keiner].
+     */
+    public static function nachtragen(File $file): array
+    {
+        if (static::aktiv() === false) {
+            return ['grund' => 'Kein API-Schlüssel eingerichtet (site/config/ki.php)'];
+        }
+        if (static::geeignet($file) === false) {
+            return ['grund' => 'Kein Bild, das einen Alt-Text bekommt'];
+        }
+        if ($file->alt()->isNotEmpty()) {
+            return ['grund' => 'Hat schon einen Alt-Text'];
+        }
+        // Jemand bearbeitet das Bild gerade im Panel. Speichert er spaeter,
+        // ginge der Vorschlag ohnehin verloren; ausserdem koennte dort schon
+        // ein Alt-Text stehen, der nur noch nicht gespeichert ist.
+        if ($file->version('changes')->exists('current')) {
+            return ['grund' => 'Hat ungespeicherte Änderungen im Panel'];
         }
 
-        return null;
+        $ergebnis = static::eintragen($file);
+        return $ergebnis instanceof File
+            ? ['text' => $ergebnis->alt()->value()]
+            : ['grund' => $ergebnis];
+    }
+
+    /**
+     * Erzeugt den Alt-Text und speichert ihn. Gibt die aktualisierte Datei
+     * zurueck oder den Grund, warum es keinen Text gibt (steht dann auch
+     * im PHP-Fehlerprotokoll).
+     */
+    protected static function eintragen(File $file): File|string
+    {
+        try {
+            $text = static::erzeugen($file, option('eonm.seo.ki.schluessel'));
+            if ($text !== null) {
+                // Der Text kommt vom System, nicht vom angemeldeten Benutzer
+                return $file->kirby()->impersonate('kirby', fn () => $file->update(['alt' => $text]));
+            }
+            $grund = 'Keine brauchbare Antwort der Claude-API';
+        } catch (AuthenticationException $e) {
+            $grund = 'API-Schlüssel ungültig (site/config/ki.php)';
+        } catch (RateLimitException $e) {
+            $grund = 'Anfragelimit der Claude-API erreicht';
+        } catch (APIStatusException $e) {
+            $grund = 'Claude-API antwortet mit Fehler ' . $e->getMessage();
+        } catch (APIConnectionException $e) {
+            $grund = 'Claude-API nicht erreichbar oder Zeitlimit überschritten';
+        } catch (Throwable $e) {
+            $grund = $e->getMessage();
+        }
+
+        static::melden($file, $grund);
+        return $grund;
     }
 
     /**

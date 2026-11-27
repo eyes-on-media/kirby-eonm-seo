@@ -141,5 +141,27 @@ Ohne die Datei ist die Funktion aus.
 'eonm.seo.ki.zeitlimit'  => 20,                   // Sekunden
 ```
 
+### Alt-Texte nachtragen
+
+Fuer Bilder, die schon vor dem Einrichten hochgeladen waren. Beides fuellt
+nur leere Alt-Texte; ein vorhandener Text wird nie ueberschrieben, und
+Bilder mit ungespeicherten Aenderungen im Panel werden uebersprungen.
+
+- **Im Panel:** Reiter "SEO" der Website, Feld "Alt-Texte nachtragen"
+  (steht schon in `tabs/seo-site`). Zeigt, wie viele Bilder keinen
+  Alt-Text haben, beschreibt sie auf Knopfdruck nacheinander und listet
+  die Vorschlaege mit Link zum Bild. Laesst sich anhalten; die Seite muss
+  waehrend des Laufs offen bleiben. Nur Bilder, die der Benutzer
+  bearbeiten darf.
+- **Auf der Kommandozeile** (mit [Kirby CLI](https://github.com/getkirby/cli)):
+
+  ```bash
+  kirby seo:alt-texte --liste   # nur zeigen, welche Bilder keinen haben
+  kirby seo:alt-texte           # Alt-Texte erzeugen
+  ```
+
+Bewusst leer gelassene Alt-Texte (dekorative Bilder) bekommen dabei
+ebenfalls einen Vorschlag.
+
 Jedes hochgeladene Bild geht verkleinert an Anthropic. Das gehoert in die
 Datenschutzerklaerung und ist mit dem Kunden abzusprechen.

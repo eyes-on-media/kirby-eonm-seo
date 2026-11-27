@@ -27,6 +27,10 @@ columns:
         uploads:
           template: image
         help: Querformat, mindestens 1200 px breit. Erscheint beim Teilen von Seiten ohne eigenes Bild.
+      seo_alttexte:
+        type: seoalttexte
+        label: Alt-Texte nachtragen
+        help: Für Bilder, die schon hochgeladen sind und noch keinen Alt-Text haben. Vorhandene Alt-Texte bleiben, wie sie sind.
   - width: 1/3
     sticky: true
     fields:
